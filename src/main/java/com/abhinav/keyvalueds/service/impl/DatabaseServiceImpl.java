@@ -8,6 +8,7 @@ import com.abhinav.keyvalueds.shared.utils.ErrorMessages;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -34,7 +35,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
         pair.remove("key");
 
-        if(db.length() == 0) {
+        if(db.length() <= 0) {
 
             dbObjects.put(key, pair);
 
@@ -45,13 +46,13 @@ public class DatabaseServiceImpl implements DatabaseService {
             JSONParser parser = new JSONParser();
             JSONObject pairs = (JSONObject) parser.parse(reader);
 
+            reader.close();
+
             if(pairs.containsKey(key)) throw new DatabaseServiceException(ErrorMessages.KEY_ALREADY_EXISTS.getErrorMessage());
 
             pairs.put(key, pair);
 
-            reader.close();
-
-            this.fileService.writeToFile(pair.toJSONString().getBytes());
+            this.fileService.writeToFile(pairs.toJSONString().getBytes());
 
         }
 
@@ -66,11 +67,11 @@ public class DatabaseServiceImpl implements DatabaseService {
 
         JSONObject pairs = (JSONObject) parser.parse(reader);
 
+        reader.close();
+
         if (!pairs.containsKey(key)) throw new DatabaseServiceException(ErrorMessages.RECORD_NOT_FOUND.getErrorMessage());
 
         JSONObject requiredPair = (JSONObject) pairs.get(key);
-
-        reader.close();
 
         if (((new Date().getTime()) - ((long) requiredPair.get("createdAt") + (long) requiredPair.get("ttl"))) >= 0) {
 
@@ -84,7 +85,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public void deleteValueByKey(String key) throws Exception {
+    public ResponseEntity<String> deleteValueByKey(String key) throws Exception {
 
         FileReader reader = new FileReader(this.getFile());
         JSONParser parser = new JSONParser();
@@ -99,6 +100,8 @@ public class DatabaseServiceImpl implements DatabaseService {
 
         this.fileService.writeToFile(pairs.toJSONString().getBytes());
 
+        return ResponseEntity.ok("Record Deleted");
+
     }
 
     @Override
@@ -111,4 +114,12 @@ public class DatabaseServiceImpl implements DatabaseService {
         return true;
 
     }
+
+//    public boolean checkIfExpired(JSONObject pair) throws Exception {
+//
+//        if (((new Date().getTime()) - ((long) pair.get("createdAt") + (long) pair.get("ttl"))) >= 0) {
+//            return true;
+//        }
+//        return false;
+//    }
 }

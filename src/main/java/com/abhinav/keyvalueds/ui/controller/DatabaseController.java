@@ -7,6 +7,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -51,8 +52,8 @@ public class DatabaseController {
     }
 
     @DeleteMapping("/{key}")
-    public void deleteEmployee(@PathVariable String key) throws Exception {
-        databaseService.deleteValueByKey(key);
+    public ResponseEntity<String> deleteEmployee(@PathVariable String key) throws Exception {
+        return databaseService.deleteValueByKey(key);
     }
 
     @PostMapping(
