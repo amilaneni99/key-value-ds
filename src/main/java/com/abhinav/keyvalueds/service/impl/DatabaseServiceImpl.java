@@ -73,12 +73,14 @@ public class DatabaseServiceImpl implements DatabaseService {
 
         JSONObject requiredPair = (JSONObject) pairs.get(key);
 
-        if (((new Date().getTime()) - ((long) requiredPair.get("createdAt") + (long) requiredPair.get("ttl"))) >= 0) {
+//        if (((new Date().getTime()) - ((long) requiredPair.get("createdAt") + (long) requiredPair.get("ttl"))) >= 0) {
+//
+//            deleteValueByKey(key);
+//            throw new DatabaseServiceException(ErrorMessages.KEY_EXPIRED.getErrorMessage());
+//
+//        }
 
-            deleteValueByKey(key);
-            throw new DatabaseServiceException(ErrorMessages.KEY_EXPIRED.getErrorMessage());
-
-        }
+        if (isExpired(key, requiredPair)) throw new DatabaseServiceException(ErrorMessages.KEY_EXPIRED.getErrorMessage());
 
         return requiredPair;
 
@@ -115,11 +117,12 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     }
 
-//    public boolean checkIfExpired(JSONObject pair) throws Exception {
-//
-//        if (((new Date().getTime()) - ((long) pair.get("createdAt") + (long) pair.get("ttl"))) >= 0) {
-//            return true;
-//        }
-//        return false;
-//    }
+    public boolean isExpired(String key, JSONObject pair) throws Exception {
+
+        if (((new Date().getTime()) - ((long) pair.get("createdAt") + (long) pair.get("ttl"))) >= 0) {
+            deleteValueByKey(key);
+            return true;
+        }
+        return false;
+    }
 }
